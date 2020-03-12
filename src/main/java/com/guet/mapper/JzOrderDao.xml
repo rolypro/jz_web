@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.guet.dao.JzOrderDao">
+<!-- 使用resultmap -->
+
+	<resultMap type="JzOrder" id="getJzOrder">
+		<id column="id" property="id"/>
+		<result column="oID" property="oId"/>
+		<result column="xiadanID" property="xiadanId"/>	
+		<result column="jiedanID" property="jiedanId"/>	
+		<result column="serverID" property="serverId"/>	
+		<result column="isCompany" property="isCompany"/>
+		<result column="serverType" property="serverType"/>
+		<result column="startTime" property="startTime"/>	
+		<result column="endTime" property="endTime"/>	
+		<result column="createTime" property="createTime"/>
+		<result column="gold" property="gold"/>	
+		<result column="state" property="state"/>
+		<association property="xAccount" column="xiadanID" select="getUser"/> 
+		<association property="jAccount" column="jiedanID" select="getUser"/> 
+	</resultMap>
+	
+	<select id="getUser" parameterType="int" resultType="Account">  
+         SELECT * FROM Account WHERE id=#{id}  
+  	</select>  
+	
+	
+	
+	
+	<select id="findState" parameterType="int" resultMap="getJzOrder">
+		select *
+		 from JzOrder 
+		 <where>
+				<if test="state!=null and state lt 6">
+					state &lt; 6
+				</if>	
+				<if test="state!=null and state ==6">
+					state >= 6
+				</if>
+		</where>
+	</select>
+	
+	<select id="findCState"  resultMap="getJzOrder">
+		select *
+		 from JzOrder 
+		 <where>
+				<if test="state!=null and state lt 6">
+					state &lt; 6
+				</if>	
+				<if test="state!=null and state ==6">
+					state = 6
+				</if>
+				and xiadanID=#{id}
+		</where>
+	</select>
+	
+	<select id="findSState"  resultMap="getJzOrder">
+		select *
+		 from JzOrder 
+		 <where>
+				<if test="state!=null and state lt 6">
+					state &lt; 6
+				</if>	
+				<if test="state!=null and state ==6">
+					state = 6
+				</if>
+				and jiedanID=#{id}
+		</where>
+	</select>
+	
+	
+	<select id="findOrderTime" parameterType="JzOrder" resultMap="getJzOrder">
+		select *
+		 from JzOrder 
+		 where jiedanID = #{jiedanId}
+		 	and	isCompany = #{isCompany}
+		 	and serverID = #{serverId}
+		 		 	
+	</select>
+	
+	<select id="findServerOrder"  resultMap="getJzOrder">
+		select *
+		 from JzOrder 
+		 where serverID = #{id}
+		 	and	isCompany = #{isCompany}
+		 	and state &lt; 6
+	</select>
+	
+	<select id="findAll"  resultMap="getJzOrder">
+		select * from JzOrder
+	</select>
+	
+	<select id="findById" parameterType="int" resultMap="getJzOrder">
+		select * from JzOrder where ID = #{id}
+	</select>
+	
+	<select id="findOrderWeek"  resultMap="getJzOrder">
+		select * from JzOrder 
+			where DATE_SUB(CURDATE(),INTERVAL 7 DAY) &lt; date(createTime) and state >= 6 
+			order by createTime asc
+	</select>
+	
+	<insert id="insert" parameterType="JzOrder" useGeneratedKeys="true" keyProperty="id">
+		insert into JzOrder(oID,xiadanID,jiedanID,serverID,isCompany,serverType,
+					startTime,endTime,createTime,gold,state) 
+			values(#{oId},#{xiadanId},#{jiedanId},#{serverId},#{isCompany},#{serverType},
+					#{startTime},#{endTime},#{createTime},#{gold},#{state})
+	</insert>
+	
+	<update id="update" parameterType="JzOrder">
+		update JzOrder
+			set title=#{title},
+				content=#{content},	
+				author=#{author}							
+			where id=#{id}
+	</update>
+	
+	<update id="updateState" >
+		update JzOrder set state=#{1}	where id=#{0}
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		delete from JzOrder where id=#{id}
+	</delete>
+	
+
+</mapper>

@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>cropper图片裁剪案例</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="baidu-tc-cerfication" content="315f7ed10c0de83badbd33934a33aec1">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta content="telephone=no,email=no" name="format-detection">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/cropper.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="../dist/jquery.min.js"></script>
+    <script src="../dist/cropper.min.js"></script>
+  </head>
+  
+  <link href="../dist/cropper.min.css" rel="stylesheet">
+  <input type="hidden" id="BS_s" value="${BS}">
+  <body class="page-address-book ">
+
+    <div class="row">
+      <div class="col-md-8">
+        <!-- <h3>Demo:</h3> -->
+        <div class="img-container">
+          <img id="EditImg" src="" alt="Picture">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <!-- <h3>Preview:</h3> -->
+        <div class="docs-preview clearfix">
+          <div class="img-preview preview-lg"></div>
+          
+        </div>
+
+        <!-- <h3>Data:</h3> -->
+        <div class="docs-data">
+          
+        </div>
+
+
+      </div>
+    </div>
+
+        <!--背景图片显示区域-->
+        <div" style="height:70%;">
+            
+        </div>
+        
+          
+        </div>
+        <input style="display: none;" id="inputImage" name="file" type="file" accept="image/*">
+        点击上面背景图片更换图片
+        <!--图片裁剪以及智能识别区域-->
+        <div id="showEdit" class="containerImage Hide cliper_wrapper">
+            <div class="footer-btn" style="height: 55px;">
+                <button type="button" style="width: 130px;font-size: 20px;height: 40px;margin-top: 8px;" class="ReselectPhoto" onclick="JavaScript:$('#inputImage').click();">重选照片</button>
+                <button id="cut" type="button" style="width: 100px;font-size: 20px;height: 40px;margin-top: 8px;background-color: #3A9E9E;border: 1px solid #3A9E9E;" class="Cut">剪切</button>
+                <button id="submit" type="button" style="width: 100px;font-size: 20px;height: 40px;margin-top: 8px;" class="Cut">提交</button>
+            </div>
+        </div>
+  
+
+  <script>
+    $(function (){
+        'use strict';//表示强规则  
+        var Cropper = window.Cropper;  
+        var console = window.console || { log: function () {} };
+        var URL = window.URL || window.webkitURL;
+        var $image = $('#EditImg');
+        //获取图片截取的位置
+        var screenWidth = $(window).width();  
+        var screenHeight =  $(window).height();  
+        var $dataX = $('#dataX');
+        var $dataY = $('#dataY');
+        var $dataHeight = $('#dataHeight');
+        var $dataWidth = $('#dataWidth');
+        var $dataRotate = $('#dataRotate');
+        var $dataScaleX = $('#dataScaleX');
+        var $dataScaleY = $('#dataScaleY');
+        var options = {
+                containerHeight :  screenWidth,  
+                containerWidth : screenHeight, 
+                preview: '.img-preview',
+                guides :true,//裁剪框虚线 默认true有  
+                aspectRatio: 1 / 1, //裁剪框比例1:1
+                
+                crop: function (e) {
+                  $dataX.val(Math.round(e.x));
+                  $dataY.val(Math.round(e.y));
+                  $dataHeight.val(Math.round(e.height));
+                  $dataWidth.val(Math.round(e.width));
+                  $dataRotate.val(e.rotate);
+                  $dataScaleX.val(e.scaleX);
+                  $dataScaleY.val(e.scaleY);
+                }
+            };
+
+        $('#EditImg').cropper(options);
+
+        // Options
+        var originalImageURL = $image.attr('src');
+        var uploadedImageURL;
+        var $inputImage = $('#inputImage');
+        URL = window.URL || window.webkitURL;
+        var blobURL;
+        if (URL) {
+          $inputImage.change(function () {
+            var files = this.files,
+                file;
+            if (files && files.length) {
+              file = files[0];
+              if (/^image\/\w+$/.test(file.type)) {
+                blobURL = URL.createObjectURL(file);
+                $image.one('built.cropper', function () {
+                  URL.revokeObjectURL(blobURL); // Revoke when load complete
+                }).cropper('reset', true).cropper('replace', blobURL);
+                //$inputImage.val('');
+                $("#showEdit").removeClass('Hide');
+              } else {
+                //alert('Please choose an image file.');
+              }
+            }
+          });
+        } else {
+          $inputImage.parent().remove();
+        }
+        //裁剪图片
+        $("#cut").on("click", function (){
+           var dataURL = $image.cropper("getCroppedCanvas");  
+           var imgurl = dataURL.toDataURL("image/*", 0.5);  
+           $image.cropper('destroy').attr('src', imgurl).cropper(options);
+        });
+        //提交图片
+        $("#submit").on("click", function () {
+           var accessory = $('#inputImage').val();
+           if (typeof accessory == "null"){ 
+                alert("is null"); 
+                return ;
+           } 
+           var accessoryName = accessory.substring(accessory.lastIndexOf("\\")+1,accessory.length);//截取原文件名
+           var dataURL = $image.cropper("getCroppedCanvas");//拿到剪裁后的数据  
+           var data = dataURL.toDataURL("image/*", 0.5);//转成base64
+           if (typeof data == "null"){ 
+                alert("is null"); 
+                return ;
+           } 
+           var BS_s = $("#BS_s").val();
+           alert(data.toString())
+           $.ajax({    
+                url: BS_s+"/wxFirst/uploadImgBase",  
+                dataType:'json',  
+                type: "POST",    
+                data: {
+                    fileName : accessoryName,
+                    imgBase64 : data.toString()
+                },    
+                timeout : 10000, //超时时间设置，单位毫秒  
+                async: true,    
+                success: function (result) { 
+
+                },    
+                error: function (returndata) { 
+
+                }  
+            });  
+        });
+    });
+  </script>
+  </body>
+</html>

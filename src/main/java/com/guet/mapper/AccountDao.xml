@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.guet.dao.AccountDao">
+<!-- 使用resultmap -->
+
+	<resultMap type="Account" id="getAccount">
+		<id column="id" property="id"/>		
+		<result column="userName" property="username"/>
+		<result column="passWord" property="password"/>
+		<result column="name" property="name"/>
+		<result column="sex" property="sex"/>		
+		<result column="phone" property="phone"/>
+		<result column="address" property="address"/>
+		<result column="power" property="power"/>
+		<result column="gold" property="gold"/>
+		<result column="lastIp" property="lastIp"/>
+		<result column="lastTime" property="lastTime"/>
+	</resultMap>
+	
+	
+	<select id="checkUserName" parameterType="string" resultMap="getAccount">
+		select * from Account where userName = #{username} and power!=2
+	</select>
+	
+	<select id="findById" parameterType="int" resultMap="getAccount">
+		select * from Account where id = #{id}
+	</select>
+	
+	<select id="findAll"  resultMap="getAccount">
+		select * from Account 
+	</select>
+	
+	<select id="findAllAdmin"  resultMap="getAccount">
+		select * from Account where power = 0
+	</select>
+	
+	<insert id="insertAccount" parameterType="Account" useGeneratedKeys="true" keyProperty="id">
+		insert into Account(userName,passWord,name,sex,phone,address,power) 
+			values(#{username},#{password},#{name},#{sex},#{phone},#{address},"3")
+	</insert>
+	
+	<update id="updateAccount" parameterType="Account">
+		update Account
+			set userName=#{username},
+				passWord=#{password},
+				name=#{name},
+				sex=#{sex},
+				phone=#{phone},
+				address=#{address},
+				power=#{power}
+			where id=#{id}
+	</update>
+	
+	
+	<update id="updateIpAndTime" >
+		update Account
+			set lastIp = #{ip},
+				lastTime = #{time}
+			where id=#{id}
+	</update>
+	
+	
+	<update id="updatePower" >
+		update Account
+			set power = #{power}
+			where id=#{id}
+	</update>
+	
+	<update id="updateUserInfo" parameterType="Account">
+		update Account
+			set 
+				name=#{name},
+				phone=#{phone},
+				address=#{address}
+				
+			where id=#{id}
+	</update>
+	
+	
+	<update id="updatePass" >
+		update Account
+			set 
+				password=#{pass}
+				
+			where id=#{id}
+	</update>
+	
+	<update id="changeGold" >
+		update Account
+			set gold = gold + #{gold}
+			where id=#{id}
+	</update>
+	
+	<delete id="delete">
+	    delete from Account where id = #{id}
+	</delete>
+	
+
+</mapper>

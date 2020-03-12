@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.guet.dao.EvaluateDao">
+<!-- 使用resultmap -->
+
+	<resultMap type="Evaluate" id="getEvaluate">
+		<id column="ID" property="id"/>
+		<result column="uID" property="uId"/>
+		<result column="sID" property="sId"/>	
+		<result column="dID" property="dId"/>
+		<result column="isCompany" property="isCompany"/>	
+		<result column="createTime" property="createTime"/>
+		<result column="content" property="content"/>
+	</resultMap>
+	
+	<resultMap type="Evaluate" id="getEvaluateAndPeo">
+		<id column="ID" property="id"/>
+		<result column="uID" property="uId"/>
+		<result column="sID" property="sId"/>	
+		<result column="dID" property="dId"/>
+		<result column="isCompany" property="isCompany"/>	
+		<result column="createTime" property="createTime"/>
+		<result column="content" property="content"/>
+		
+		<association property="acc" column="uID" select="ServiceAcc"/> 
+		<association property="servicePeople" column="sID" select="ServicePeople"/> 
+		
+	</resultMap>
+	
+	<resultMap type="Evaluate" id="getEvaluateAndCom">
+		<id column="ID" property="id"/>
+		<result column="uID" property="uId"/>
+		<result column="sID" property="sId"/>
+		<result column="dID" property="dId"/>	
+		<result column="isCompany" property="isCompany"/>	
+		<result column="createTime" property="createTime"/>
+		<result column="content" property="content"/>
+		
+		<association property="acc" column="uID" select="ServiceAcc"/> 
+		<association property="serviceCompany" column="sID" select="ServiceCompany"/> 
+		
+	</resultMap>
+	
+	<!--  外键查询  -->
+	<select id="ServicePeople" parameterType="int" resultType="ServicePeople">  
+         SELECT * FROM ServicePeople WHERE id=#{id}  
+  	</select>  
+  	<select id="ServiceCompany" parameterType="int" resultType="ServiceCompany">  
+         SELECT * FROM ServiceCompany WHERE id=#{id}  
+  	</select>
+  	<select id="ServiceAcc" parameterType="int" resultType="Account">  
+         SELECT * FROM Account WHERE id=#{id}  
+  	</select>  
+  	
+  	
+  	
+	<select id="findPeopleById" parameterType="int" resultMap="getEvaluateAndPeo">  
+         SELECT * FROM Evaluate WHERE sID=#{sID}  
+  	</select> 
+  	
+	<select id="findCompanyById" parameterType="int" resultMap="getEvaluateAndCom">  
+         SELECT * FROM Evaluate WHERE sID=#{sID}  
+  	</select> 
+	
+	
+	
+	<insert id="insert"  parameterType="Evaluate" useGeneratedKeys="true" keyProperty="id">
+		insert into Evaluate(uID,sID,dID,isCompany,createTime,content) 
+			values(#{uId},#{sId},#{dId},#{isCompany},#{createTime},#{content})
+	</insert>
+	
+	
+	
+	<delete id="delete" parameterType="int">
+		delete from JzOrder where id=#{id}
+	</delete>
+	
+
+</mapper>

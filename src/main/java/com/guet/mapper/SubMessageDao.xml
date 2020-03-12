@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.guet.dao.SubMessageDao">
+<!-- 使用resultmap -->
+
+	<insert id="insert" parameterType="SubMessage" useGeneratedKeys="true" keyProperty="id">
+		insert into SubMessage(fID,uID,name,content,createTime) 
+			values(#{fId},#{uId},#{name},#{content},#{createTime})
+	</insert>
+	
+	<!-- <update id="update" parameterType="News">
+		update News
+			set title=#{title},
+				content=#{content},	
+				author=#{author}							
+			where id=#{id}
+	</update> -->
+	
+	<delete id="deleteByFid" parameterType="int">
+		delete from SubMessage where fID=#{fId}
+	</delete>
+	
+	<delete id="deleteById" parameterType="int">
+		delete from SubMessage where ID=#{id}
+	</delete>
+	
+
+</mapper>

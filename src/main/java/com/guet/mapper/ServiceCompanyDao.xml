@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.guet.dao.ServiceCompanyDao">
+<!-- 使用resultmap -->
+
+	<resultMap type="ServiceCompany" id="getServiceCompany">
+		<id column="id" property="id"/>
+		<result column="uId" property="uId"/>
+		<result column="name" property="name"/>		
+		<result column="phone" property="phone"/>	
+		<result column="serverType" property="serverType"/>			
+		<result column="serviceCity" property="serviceCity"/>	
+		<result column="address" property="address"/>		
+		<result column="introduce" property="introduce"/>
+		<result column="image" property="image"/>	
+		<result column="grade" property="grade"/>	
+		<result column="gradePeople" property="gradePeople"/>
+		<result column="state" property="state"/>		
+	</resultMap>
+	
+	<resultMap type="ServiceCompany" id="ServiceCompanyAndAcc" extends="getServiceCompany">
+		<association property="account" javaType="Account">
+			<id column="a_id" property="id"/>
+			<result column="a_name" property="name"/>
+		</association>
+	</resultMap>
+	
+	
+	<select id="findState" parameterType="int" resultMap="ServiceCompanyAndAcc">
+		select s.*,
+			a.ID as a_id,
+			a.name as a_name
+		 from ServiceCompany s, Account a 
+		 <where>
+				<if test="state!=null and (state==1 or state==0)">
+					s.state != 2 and s.state !=3
+				</if>	
+				<if test="state!=null and (state==2 or state ==3) ">
+					s.state != 0 and s.state != 1
+				</if>					 
+					and s.uID = a.ID 
+					
+		</where>		 
+		 
+	</select>
+		
+	<select id="findById" parameterType="int" resultMap="ServiceCompanyAndAcc">
+		select  s.*,
+			a.ID as a_id,
+			a.name as a_name 
+		from ServiceCompany s, Account a 
+		where s.ID = #{id} and s.uID = a.ID
+	</select>
+	
+	<select id="findByUid" parameterType="int" resultMap="ServiceCompanyAndAcc">
+		select s.*,
+			a.ID as a_id,
+			a.name as a_name  
+		from ServiceCompany s, Account a 
+		where s.uID = #{uId} and s.uID = a.ID
+	</select>
+	
+	<select id="findDim"  resultMap="ServiceCompanyAndAcc">
+		select s.*,
+			a.ID as a_id,
+			a.name as a_name  
+		from ServiceCompany s, Account a 
+		where
+			(s.name like '%${str}%'
+			or s.serviceCity like '%${str}%'
+			or s.serverType like '%${str}%')
+			and s.uID = a.ID
+			and s.state = 1
+		order by grade desc
+	</select>
+	
+	<select id="findByType"  resultMap="ServiceCompanyAndAcc">
+		select s.*,
+			a.ID as a_id,
+			a.name as a_name  
+		from ServiceCompany s, Account a 
+		<where>
+				<if test="city!=null and city!=''">
+					s.serviceCity = #{city}
+				</if>	
+				<if test="server!=null and server!=''">
+					and s.serverType like '%${server}%'
+				</if>									 				 
+					and s.uID = a.ID
+					and s.state = 1
+		</where>
+		order by grade desc
+	</select>
+	
+	
+	<insert id="insert" parameterType="ServiceCompany" useGeneratedKeys="true" keyProperty="id">
+		insert into ServiceCompany(uID,name,
+			phone,serverType,
+			serviceCity,address,introduce,image,
+			grade,gradePeople,state) 
+			values(#{uId},#{name},
+			#{phone},#{serverType},
+			#{serviceCity},#{address},#{introduce},#{image},
+			#{grade},#{gradePeople},2)
+	</insert>
+	
+	<update id="updateState" parameterType="ServiceCompany">
+		update ServiceCompany set state=#{1}	where id=#{0}
+	</update>
+	
+	<update id="updateGrade">
+		update ServiceCompany set 
+			grade = (grade*gradePeople+#{grade})/(gradePeople+1)
+			,gradePeople = gradePeople + 1
+			where id = #{id}
+	</update>
+	
+	<update id="uploadImage" >
+		update ServiceCompany set image=#{1}	where id=#{0}
+	</update>
+	
+	<update id="update" parameterType="ServiceCompany">
+		update ServiceCompany
+			set 
+				name=#{name},phone=#{phone},
+				serverType=#{serverType},				
+				serviceCity=#{serviceCity},
+				address=#{address},
+				introduce=#{introduce},image=#{image},
+				grade=#{grade},gradePeople=#{gradePeople},	
+				state = #{state}										
+			where id=#{id}
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		delete from ServiceCompany where id=#{id}
+	</delete>
+	
+
+</mapper>

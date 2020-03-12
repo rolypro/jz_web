@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans  xmlns="http://www.springframework.org/schema/beans"
+		xmlns:aop="http://www.springframework.org/schema/aop" 
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:mvc="http://www.springframework.org/schema/mvc"  
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/aop
+						http://www.springframework.org/schema/aop/spring-aop.xsd
+						http://www.springframework.org/schema/context
+						http://www.springframework.org/schema/context/spring-context.xsd
+						http://www.springframework.org/schema/mvc
+						http://www.springframework.org/schema/mvc/spring-mvc.xsd
+						http://www.springframework.org/schema/tx
+						http://www.springframework.org/schema/tx/spring-tx.xsd">
+	<!-- 开启注解 -->
+	<context:annotation-config/> 
+ 	<!-- 对web包中的所有类进行扫描，以完成Bean创建和自动依赖注入的功能 -->
+    <context:component-scan base-package="com.guet.*" />	
+    <!-- 启动Spring MVC的注解功能，完成请求和注解POJO的映射 -->
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/>
+    <!-- 视图解析器   
+   		 解析jsp解析，默认使用jstl标签，classpath下的得有jstl的包  
+     --> 
+    
+	<!-- 解析器注册 -->  
+	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">  
+	    <property name="messageConverters">  
+	        <list>  
+	            <ref bean="stringHttpMessageConverter"/>  
+	        </list>  
+	    </property>  
+	</bean>  
+	<!-- String类型解析器，允许直接返回String类型的消息 -->  
+	<bean id="stringHttpMessageConverter" class="org.springframework.http.converter.StringHttpMessageConverter"/>
+
+	<mvc:annotation-driven>
+	    <mvc:message-converters>
+	        <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+	            <constructor-arg value="UTF-8"/>
+	        </bean>
+	    </mvc:message-converters>
+	</mvc:annotation-driven>   
+
+   	<mvc:interceptors>    
+	    <mvc:interceptor>    
+	        <!-- 匹配的是url路径， 如果不配置或/**,将拦截所有的Controller -->  
+	        <mvc:mapping path="/**" />  
+	        <mvc:exclude-mapping path="/**/fonts/*"/>
+         	<mvc:exclude-mapping path="/**/*.css"/>
+         	<mvc:exclude-mapping path="/**/*.js"/>
+         	<mvc:exclude-mapping path="/**/*.png"/>
+         	<mvc:exclude-mapping path="/**/*.gif"/>
+         	<mvc:exclude-mapping path="/**/*.jpg"/>
+         	<mvc:exclude-mapping path="/**/*.jpeg"/>
+         	<mvc:exclude-mapping path="/main.do*"/>
+	        <mvc:exclude-mapping path="/index.do*"/>
+	        
+	        <bean class="com.guet.interceptor.LoginInterceptor"></bean>    
+	    </mvc:interceptor> 
+	    <!-- <mvc:interceptor>    
+	        匹配的是url路径， 如果不配置或/**,将拦截所有的Controller  
+	        <mvc:mapping path="/**" />  
+	        <mvc:exclude-mapping path="/index.do*"/>
+	        <mvc:exclude-mapping path="/main.do*"/>
+	        <bean class="com.guet.interceptor.GeneralInterceptor"></bean>    
+	    </mvc:interceptor> -->
+	    <!-- 当设置多个拦截器时，先按顺序调用preHandle方法，然后逆序调用每个拦截器的postHandle和afterCompletion方法 -->  
+	</mvc:interceptors> 
+   
+   
+   
+     
+     <!-- id="multipartResolver"必须是multipartResolver -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	   <!-- maxUploadSize:文件上传的最大值以byte为单位 -->
+	   <property name="maxUploadSize" value="1024000"></property>
+	</bean>
+     
+    <bean  
+        class="org.springframework.web.servlet.view.InternalResourceViewResolver">  
+        <!--配置默认到/WEB-INF/jsp/下找 <property name="prefix" value="/WEB-INF/jsp/"></property>  --> 
+        <property name="suffix" value=".jsp"></property>  
+    </bean>  
+						
+	<!-- 导入数据库参数的文件 -->						
+	<!-- <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:jdbc.properties"></property>
+	</bean> -->
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+		<property name="jdbcUrl" value="jdbc:mysql://localhost:3306/jz"></property>
+		<property name="user" value="root"></property>
+		<property name="password" value="yc@123456"></property>
+	</bean>		
+	<!-- 配置sqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- mybatis配置文件路径 -->  
+        <property name="configLocation" value="classpath:mybatis-Config.xml"></property>
+        <!-- 实体类映射文件路径,这里只有一个就写死了，多个可以使用mybatis/*.xml来替代 -->  
+        <property name="mapperLocations" value="classpath:com/guet/mapper/*.xml" />
+        <property name="typeAliasesPackage" value="com.guet.entity"></property> 
+	</bean>
+ 
+	<!-- 管理DAO 利用Spring对dao接口注入  已经扫描过就可以直接注入了-->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer" autowire="byName">
+		<property name="basePackage" value="com.guet.dao"></property>
+	</bean>
+
+	<!-- 管理service -->
+	<!-- <bean id="personService" class="zpark.service.PersonServiceImpl">
+		<property name="personDao" ref="personDao"></property>
+	</bean> -->
+	<!-- 配置json转换 -->
+	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<ref bean="mappingJacksonHttpMessageConverter" />
+			</list>
+		</property>
+	</bean>
+	<bean id="mappingJacksonHttpMessageConverter"
+		class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+		<property name="supportedMediaTypes">
+			<list>
+				<value>text/html;charset=UTF-8</value>
+				<value>application/json;charset=utf-8</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 事务通知类  实现MethodInterceptor 是一个环绕通知 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			 <tx:method name="find*" propagation="SUPPORTS"/>
+			 <tx:method name="*" propagation="REQUIRED"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<!-- 事务切面 -->
+	<!-- <aop:config>
+		<aop:pointcut expression="execution(* zpark.service.*.*(..))" id="p1"/>
+		实现MethodInterceptor使用这个标签
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="p1"/>
+	</aop:config> -->
+	
+	
+	
+	
+	
+	
+</beans>

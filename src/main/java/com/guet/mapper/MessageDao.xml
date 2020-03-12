@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.guet.dao.MessageDao">
+<!-- 使用resultmap -->
+
+	<resultMap type="Message" id="getMessage">
+		<id column="id" property="id"/>
+		<result column="uId" property="uId"></result>
+		<result column="name" property="name"/>
+		<result column="content" property="content"/>
+		<result column="createTime" property="createTime"/>
+	</resultMap>
+	
+	<resultMap type="Message" id="getMessageAndSub" extends="getMessage">
+	    <collection property="subMessage" ofType="SubMessage">
+	        <id column="s_id" property="id"/>
+	        <result column="s_fId" property="fId"/>
+	        <result column="s_uId" property="uId"/>
+			<result column="s_name" property="name"/>
+			<result column="s_content" property="content"/>
+			<result column="s_createTime" property="createTime"/>	        
+	    </collection>
+	</resultMap>
+	
+	
+	<select id="findAll"  resultMap="getMessage">
+		select * from Message
+	</select>
+	
+	<select id="findById" parameterType="int" resultMap="getMessageAndSub">
+		select m.*,
+			sm.ID as s_id, sm.fID as s_fId,
+			sm.uID as s_uId, sm.name as s_name,
+			sm.content as s_content, sm.createTime as s_createTime
+		 from Message m ,SubMessage sm 
+		 where m.ID = #{id} and sm.fID = m.ID
+	</select>
+	
+	<insert id="insert" parameterType="Message" useGeneratedKeys="true" keyProperty="id">
+		insert into Message(uID,name,content,createTime) 
+			values(#{uId},#{name},#{content},#{createTime})
+	</insert>
+	
+	<!-- <update id="update" parameterType="News">
+		update News
+			set title=#{title},
+				content=#{content},	
+				author=#{author}							
+			where id=#{id}
+	</update> -->
+	
+	<delete id="delete" parameterType="int">
+		delete from Message where ID=#{id}
+	</delete>
+	
+
+</mapper>
